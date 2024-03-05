@@ -60,7 +60,8 @@ def get_topk(match_scores,k):
     for _ in range(k):
         candidate = heapq.heappop(heap)[-1]
         ranking.append((candidate,match_scores[candidate][0],match_scores[candidate][1]))
-    
+
+    ranking.sort(key = lambda candidate:(-candidate[1],-candidate[2]))
     return ranking
 
 

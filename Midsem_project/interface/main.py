@@ -5,14 +5,19 @@ import model
 
 
 job_description = """
-Requirements:
-Bachelor's degree in Computer Science, Engineering, or related field.
- years of professional experience as a Software Engineer or related role.
-Proficiency in [programming languages, frameworks, and technologies relevant to the role, e.g., Python, Java, JavaScript, etc.].
-Strong understanding of software development principles, design patterns, and best practices.
-Experience with version control systems (e.g., Git) and agile development methodologies.
-Excellent problem-solving skills and attention to detail.
-Strong communication and collaboration skills, with the ability to work effectively in a team environment.
+Basic Qualifications
+
+ Currently enrolled in a Bachelor’s or Master’s Degree in Computer Science, Computer Engineering, or related fields at time of application
+ Although no specific programming language is required – you should be familiar with the syntax of languages such as Java, C/C++, or Python
+ Knowledge of Computer Science fundamentals such as object-oriented design, algorithm design, data structures, problem solving and complexity analysis.
+
+Preferred Qualifications
+
+ Previous technical internship(s) if applicable
+ Experience with distributed, multi-tiered systems, algorithms, and relational databases
+ Experience in optimization mathematics such as linear programming and nonlinear optimisation
+ Ability to effectively articulate technical challenges and solutions
+ Adept at handling ambiguous or undefined problems as well as ability to think abstractly
 """
 print("candidate | score | YOE")
 print(model.get_rankings(job_description,job_description_weights={"python":5,"git":3},exact_match=True))
