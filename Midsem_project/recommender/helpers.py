@@ -2,14 +2,14 @@ import heapq
 from pypdf import PdfReader
 import re
 import spacy
-import gensim.downloader as api
-from sklearn.metrics.pairwise import cosine_similarity
+from gensim.models import KeyedVectors
 
 # Download this model
 nlp = spacy.load("en_core_web_sm") 
 
-# # Load pre-trained Word2Vec model
-# word_vectors = api.load("word2vec-google-news-300")
+# Load pre-trained Word2Vec model
+filename = r'/Users/faithsobecyril/Desktop/Projects/AI/Midsem/AI_Class_Repo/Midsem_project/recommender/GoogleNews-vectors-negative300.bin'
+model = KeyedVectors.load_word2vec_format(filename, binary=True)
 
 SIMILARITY_THRESHOLD = 0.9
 
@@ -17,20 +17,25 @@ def deduplicate_tokens(tokens):
     return list(set(tokens))
 
 
-def extract_skills(resume_tokens, job_description_tokens):
+def extract_skills(resume_tokens, job_description_tokens,exact_match):
     found_skills = set()
     job_description_tokens = set(job_description_tokens) ##remove this is you are using cosine similarity
     for token in resume_tokens:
-        # resume_token_vector = word_vectors[token]
-        # for other_token in job_description_tokens:
-        #     job_description_token_vector = word_vectors[other_token]
-            ## semantic similarity
-            # if cosine_similarity([resume_token_vector], [job_description_token_vector])[0][0] >= SIMILARITY_THRESHOLD:
-            #     found_skills.add(token)
+        if exact_match:
+             # direct comparision
+             if token in job_description_tokens:
+                found_skills.add(token)
+        else:
+            # semantic similarity
+            for other_token in job_description_tokens:
+                try:
+                    if model.similarity(token,other_token) >= SIMILARITY_THRESHOLD:
+                        found_skills.add(token)
+                except KeyError:
+                    if token == other_token:
+                        found_skills.add(token)
 
-            # direct comparision
-        if token in job_description_tokens:
-            found_skills.add(token)
+
     return found_skills
 
 
@@ -43,6 +48,20 @@ def extract_text_from_pdf(pdf_path):
 
         text = join_string_from_list(pages)
         return text
+
+
+def get_topk(match_scores,k):
+    heap = []
+    
+    for candidate, score in match_scores.items():
+        heapq.heappush(heap, (-score[0], score[1], candidate))
+    
+    ranking = []
+    for _ in range(k):
+        candidate = heapq.heappop(heap)[-1]
+        ranking.append((candidate,match_scores[candidate][0],match_scores[candidate][1]))
+    
+    return ranking
 
 
 def get_match_score(found_skills,job_description_weights={}):
@@ -80,15 +99,4 @@ def remove_whitespace(text):
     return text
 
 
-def get_topk(match_scores,k):
-    heap = []
-    
-    for candidate, score in match_scores.items():
-        heapq.heappush(heap, (-score, candidate))
-    
-    ranking = []
-    for _ in range(k):
-        candidate = heapq.heappop(heap)[1]
-        ranking.append((candidate,match_scores[candidate]))
-    
-    return ranking
+
