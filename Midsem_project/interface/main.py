@@ -14,4 +14,5 @@ Experience with version control systems (e.g., Git) and agile development method
 Excellent problem-solving skills and attention to detail.
 Strong communication and collaboration skills, with the ability to work effectively in a team environment.
 """
-print(model.get_rankings(job_description,{"python":5,"git":3,"computer":5},k=2))
+print("candidate | score | YOE")
+print(model.get_rankings(job_description,job_description_weights={"python":5,"git":3},exact_match=True))
