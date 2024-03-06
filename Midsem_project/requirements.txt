@@ -3,3 +3,5 @@ nltk==3.8.1
 spacy==3.7.4
 datefinder==0.7.3
 gensim==4.3.2
+streamlit==1.31.1
+streamlit-tags==1.2.8

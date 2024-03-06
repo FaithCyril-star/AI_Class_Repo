@@ -9,13 +9,14 @@ sys.path.append('/Users/faithsobecyril/Desktop/Projects/AI/Midsem/AI_Class_Repo/
 
 def get_rankings(job_description,job_description_weights=None,k=None,exact_match=True):
     match_scores = {}
-    resumes_path = r"resumes"
+    resumes_path = r"/Users/faithsobecyril/Desktop/Projects/AI/Midsem/AI_Class_Repo/Midsem_project/resumes"
 
     job_description_tokens = preprocess_text(job_description)
     total_possible_match_score = len(job_description_tokens)
     if job_description_weights:
         for weight in job_description_weights.values():
             total_possible_match_score += (weight-1)
+ 
  
     for root,_,files in os.walk(resumes_path):
         for file in files:
@@ -25,10 +26,14 @@ def get_rankings(job_description,job_description_weights=None,k=None,exact_match
             years_of_experience = get_years_of_experience(resume_text)
             match_scores[file] = (get_match_score(found_skills,job_description_weights)/total_possible_match_score,years_of_experience)
         
-    if k is None:
-        k = len(files)
-    ranking = get_topk(match_scores,k)
-    return ranking
+        if k is None:
+            k = len(files)
+        ranking = get_topk(match_scores,k)
+        candidates = [candidate_info[0] for candidate_info in ranking]
+        match_scores = [candidate_info[1] for candidate_info in ranking]
+        years_of_experience = [candidate_info[2] for candidate_info in ranking]
+        return [candidates,match_scores,years_of_experience]
+    return [[],[],[]]
 
 
 def get_years_of_experience(resume_text):
@@ -36,8 +41,9 @@ def get_years_of_experience(resume_text):
     following_sections = ['EDUCATION', 'SKILLS', 'PROJECTS', 'CAMPUS INVOLVEMENT','EXTRACURRICULARS','LEADERSHIP & CO-CURRICULAR ACTIVITIES','VOLUNTEER WORK']
     experience_pattern = '|'.join(experience_titles)
     following_section_pattern = '|'.join(following_sections)
-    experience_section = re.search(fr'({experience_pattern})(.*?)(?={following_section_pattern})', resume_text, re.DOTALL).group()
+    experience_section = re.search(fr'({experience_pattern})(.*?)(?={following_section_pattern})', resume_text, re.DOTALL)
     if experience_section:
+        experience_section = experience_section.group()
         matches = []
         full_numeric_dates = []
         full_numeric_date_pattern = r'\b\d{1,2}[/-]\d{1,2}[/-]\d{4}\b'

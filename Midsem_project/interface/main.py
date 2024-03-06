@@ -1,23 +1,45 @@
+import streamlit as st
+from streamlit_tags import st_tags
+import time
 import sys
 sys.path.append('/Users/faithsobecyril/Desktop/Projects/AI/Midsem/AI_Class_Repo/Midsem_project/recommender')
-
 import model
+import numpy as np
+import pandas as pd
+from utils import save_uploadedfile,clear_success_mesages
+
+KEY_SKILLS_WEIGHT = 3
 
 
-job_description = """
-Basic Qualifications
+def main():
+    st.title("Resume Parsing and Recommendation System")
+    st.divider()
+    st.caption("A Python application that automates the process of parsing resumes (CVs) from PDF format, extracts relevant information and recommends candidates based on specific job requirements and years of experience.")
+    job_description = st.text_area("Enter your job description",height=150)
+    key_skills = st_tags(
+        label='Enter most important skills:',
+        text='Press enter to add more',
+        maxtags = -1)
+    match_type = st.checkbox("Exact token match")
+    st.markdown('##')
+    resumes = st.file_uploader("Upload your resumes", type=['pdf'], accept_multiple_files=True, label_visibility="visible")
+    for resume in resumes:
+        save_uploadedfile(resume)
 
- Currently enrolled in a Bachelor’s or Master’s Degree in Computer Science, Computer Engineering, or related fields at time of application
- Although no specific programming language is required – you should be familiar with the syntax of languages such as Java, C/C++, or Python
- Knowledge of Computer Science fundamentals such as object-oriented design, algorithm design, data structures, problem solving and complexity analysis.
+    _, _, col3 , _, _ = st.columns(5)
+    with col3 :
+        submit = st.button("Submit")
 
-Preferred Qualifications
+    if submit:
+        clear_success_mesages()
+        if key_skills:
+            key_skills = {skill.lower():KEY_SKILLS_WEIGHT for skill in key_skills}
+        with st.spinner('Analyzing resumes...'):
+            candidates,match_scores,years_of_experience = model.get_rankings(job_description,job_description_weights=key_skills,exact_match=match_type)
+        data_frame = pd.DataFrame(zip(candidates,match_scores,years_of_experience),columns=['candidates','match_scores','years_of_experience'])
+        st.write("Results:")
+        st.table(data_frame)
 
- Previous technical internship(s) if applicable
- Experience with distributed, multi-tiered systems, algorithms, and relational databases
- Experience in optimization mathematics such as linear programming and nonlinear optimisation
- Ability to effectively articulate technical challenges and solutions
- Adept at handling ambiguous or undefined problems as well as ability to think abstractly
-"""
-print("candidate | score | YOE")
-print(model.get_rankings(job_description,job_description_weights={"python":5,"git":3},exact_match=True))
+
+if __name__=='__main__':
+    main()

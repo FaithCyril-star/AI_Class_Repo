@@ -68,7 +68,7 @@ def get_topk(match_scores,k):
 def get_match_score(found_skills,job_description_weights={}):
     score = len(found_skills)
 
-    if job_description_weights == {}:
+    if job_description_weights == None:
         return score
 
     for skill in job_description_weights:
