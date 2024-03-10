@@ -20,3 +20,10 @@ def clear_success_mesages():
     for success in success_messages:
         success.empty()
     success_messages.clear()
+
+
+def get_number_of_resumes():
+    count = 0
+    for _, _, files in os.walk(r'/Users/faithsobecyril/Desktop/Projects/AI/Midsem/AI_Class_Repo/Midsem_project/resumes'):
+        count += len(files)
+    return count

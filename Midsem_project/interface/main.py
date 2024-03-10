@@ -6,7 +6,7 @@ sys.path.append('/Users/faithsobecyril/Desktop/Projects/AI/Midsem/AI_Class_Repo/
 import model
 import numpy as np
 import pandas as pd
-from utils import save_uploadedfile,clear_success_mesages
+from utils import save_uploadedfile,clear_success_mesages,get_number_of_resumes
 
 KEY_SKILLS_WEIGHT = 3
 
@@ -20,6 +20,7 @@ def main():
         label='Enter most important skills:',
         text='Press enter to add more',
         maxtags = -1)
+    number_of_rankings = st.number_input('Enter desired number of rankings',value=0,min_value=0)
     match_type = st.checkbox("Exact token match")
     st.markdown('##')
     resumes = st.file_uploader("Upload your resumes", type=['pdf'], accept_multiple_files=True, label_visibility="visible")
@@ -35,7 +36,7 @@ def main():
         if key_skills:
             key_skills = {skill.lower():KEY_SKILLS_WEIGHT for skill in key_skills}
         with st.spinner('Analyzing resumes...'):
-            candidates,match_scores,years_of_experience = model.get_rankings(job_description,job_description_weights=key_skills,exact_match=match_type)
+            candidates,match_scores,years_of_experience = model.get_rankings(job_description,job_description_weights=key_skills,k=min(number_of_rankings,get_number_of_resumes()),exact_match=match_type)
         data_frame = pd.DataFrame(zip(candidates,match_scores,years_of_experience),columns=['candidates','match_scores','years_of_experience'])
         st.write("Results:")
         st.table(data_frame)
