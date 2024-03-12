@@ -7,20 +7,15 @@ load_dotenv()
 
 s3 = boto3.client(
     service_name="s3",
-    region_name="eu-north-1",
-    aws_access_key_id="AKIAVRUVWA22CPAH3THF",
-    aws_secret_access_key="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",
+    region_name=os.getenv('AWS_REGION'),
+    aws_access_key_id=os.getenv('ACCESS_KEY'),
+    aws_secret_access_key=os.getenv('SECRET_KEY')
 )
 bucket = "resume-bucket2"
 
 
 def save_to_S3(uploadedfile):
-    s3 = boto3.client(
-        service_name="s3",
-        region_name=os.getenv('AWS_REGION'),
-        aws_access_key_id=os.getenv('ACCESS_KEY'),
-        aws_secret_access_key=os.getenv('SECRET_KEY')
-    )
+
     try:
         s3.upload_fileobj(uploadedfile,bucket , f"resume-{uploadedfile.name}")
         return
