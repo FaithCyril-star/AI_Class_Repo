@@ -8,7 +8,7 @@ from gensim.models import KeyedVectors
 nlp = spacy.load("en_core_web_sm") 
 
 # Load pre-trained Word2Vec model
-filename = r'/Users/faithsobecyril/Desktop/Projects/AI/Midsem/AI_Class_Repo/Midsem_project/recommender/GoogleNews-vectors-negative300.bin'
+filename = r'recommender/GoogleNews-vectors-negative300.bin'
 model = KeyedVectors.load_word2vec_format(filename, binary=True)
 
 SIMILARITY_THRESHOLD = 0.9
@@ -59,7 +59,7 @@ def get_topk(match_scores,k):
     ranking = []
     for _ in range(k):
         candidate = heapq.heappop(heap)[-1]
-        ranking.append((candidate,match_scores[candidate][0],match_scores[candidate][1]))
+        ranking.append((candidate,match_scores[candidate][0],match_scores[candidate][1],match_scores[candidate][2]))
 
     ranking.sort(key = lambda candidate:(-candidate[1],-candidate[2]))
     return ranking

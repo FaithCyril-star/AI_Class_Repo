@@ -6,7 +6,7 @@ success_messages = []
 
 
 def save_uploadedfile(uploadedfile):
-    with open(os.path.join("/Users/faithsobecyril/Desktop/Projects/AI/Midsem/AI_Class_Repo/Midsem_project/resumes",uploadedfile.name),"wb") as f:
+    with open(os.path.join("resumes",uploadedfile.name),"wb") as f:
         f.write(uploadedfile.getbuffer())
     return show_upload_success_message(uploadedfile.name)
 
@@ -24,6 +24,6 @@ def clear_success_mesages():
 
 def get_number_of_resumes():
     count = 0
-    for _, _, files in os.walk(r'/Users/faithsobecyril/Desktop/Projects/AI/Midsem/AI_Class_Repo/Midsem_project/resumes'):
+    for _, _, files in os.walk(r'resumes'):
         count += len(files)
     return count

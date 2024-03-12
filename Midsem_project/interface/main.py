@@ -1,9 +1,7 @@
 import streamlit as st
 from streamlit_tags import st_tags
 import time
-import sys
-sys.path.append('/Users/faithsobecyril/Desktop/Projects/AI/Midsem/AI_Class_Repo/Midsem_project/recommender')
-import model
+from recommender import model
 import numpy as np
 import pandas as pd
 from utils import save_uploadedfile,clear_success_mesages,get_number_of_resumes
@@ -36,8 +34,8 @@ def main():
         if key_skills:
             key_skills = {skill.lower():KEY_SKILLS_WEIGHT for skill in key_skills}
         with st.spinner('Analyzing resumes...'):
-            candidates,match_scores,years_of_experience = model.get_rankings(job_description,job_description_weights=key_skills,k=min(number_of_rankings,get_number_of_resumes()),exact_match=match_type)
-        data_frame = pd.DataFrame(zip(candidates,match_scores,years_of_experience),columns=['candidates','match_scores','years_of_experience'])
+            candidates,match_scores,years_of_experience,candidate_information = model.get_rankings(job_description,job_description_weights=key_skills,k=min(number_of_rankings,get_number_of_resumes()),exact_match=match_type)
+        data_frame = pd.DataFrame(zip(candidates,match_scores,years_of_experience,candidate_information),columns=['candidates','match_scores','years_of_experience','contact_information'])
         st.write("Results:")
         st.table(data_frame)
 

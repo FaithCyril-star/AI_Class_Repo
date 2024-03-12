@@ -1,15 +1,15 @@
 import datefinder
 from datetime import datetime
-from helpers import extract_skills, extract_text_from_pdf, get_match_score, preprocess_text,get_topk
+from .helpers import extract_skills, extract_text_from_pdf, get_match_score, preprocess_text,get_topk
 import os
 import re
 import sys
-sys.path.append('/Users/faithsobecyril/Desktop/Projects/AI/Midsem/AI_Class_Repo/Midsem_project/resumes')
+import spacy
 
 
 def get_rankings(job_description,job_description_weights=None,k=None,exact_match=True):
     match_scores = {}
-    resumes_path = r"/Users/faithsobecyril/Desktop/Projects/AI/Midsem/AI_Class_Repo/Midsem_project/resumes"
+    resumes_path = r"resumes"
 
     job_description_tokens = preprocess_text(job_description)
     total_possible_match_score = len(job_description_tokens)
@@ -24,7 +24,8 @@ def get_rankings(job_description,job_description_weights=None,k=None,exact_match
             resume_tokens = preprocess_text(resume_text)
             found_skills = extract_skills(resume_tokens,job_description_tokens,exact_match)
             years_of_experience = get_years_of_experience(resume_text)
-            match_scores[file] = (get_match_score(found_skills,job_description_weights)/total_possible_match_score,years_of_experience)
+            candidate_info = get_information(resume_text)
+            match_scores[file] = (get_match_score(found_skills,job_description_weights)/total_possible_match_score,years_of_experience,candidate_info)
         
         if k is None:
             k = len(files)
@@ -32,8 +33,9 @@ def get_rankings(job_description,job_description_weights=None,k=None,exact_match
         candidates = [candidate_info[0] for candidate_info in ranking]
         match_scores = [candidate_info[1] for candidate_info in ranking]
         years_of_experience = [candidate_info[2] for candidate_info in ranking]
-        return [candidates,match_scores,years_of_experience]
-    return [[],[],[]]
+        candidate_information = [candidate_info[3] for candidate_info in ranking]
+        return [candidates,match_scores,years_of_experience,candidate_information]
+    return [[],[],[],[]]
 
 
 def get_years_of_experience(resume_text):
@@ -85,6 +87,31 @@ def get_years_of_experience(resume_text):
 
         return round(total_work_experience/365,2)
     return 0
+
+
+def get_information(resume_text):
+    information = {}
+
+   # Extract candidate's name from the first line of the resume
+    lines = resume_text.split('\n')
+    first_line = lines[0].strip()
+    information['Candidate Name'] = first_line
+
+    # Extract contact information using regex
+    email_pattern = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
+    phone_pattern = re.compile(r'\b(?:\+?233\d{9}|\d{10})\b') 
+    
+    email_matches = email_pattern.findall(resume_text)
+    phone_matches = phone_pattern.findall(resume_text)
+
+    if email_matches:
+        information['Email'] = email_matches
+    if phone_matches:
+        information['Phone Number'] = phone_matches
+
+    return information
+
+
 
 
 
