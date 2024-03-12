@@ -1,15 +1,14 @@
 import datefinder
 from datetime import datetime
-from .helpers import extract_skills, extract_text_from_pdf, get_match_score, preprocess_text,get_topk
+from .helpers import extract_skills, extract_text_from_pdf, get_match_score, preprocess_text,get_topk,iterate_bucket_items
 import os
 import re
 import sys
 import spacy
 
 
-def get_rankings(job_description,job_description_weights=None,k=None,exact_match=True):
+def get_rankings(job_description,k=1,job_description_weights=None,exact_match=True):
     match_scores = {}
-    resumes_path = r"resumes"
 
     job_description_tokens = preprocess_text(job_description)
     total_possible_match_score = len(job_description_tokens)
@@ -18,24 +17,19 @@ def get_rankings(job_description,job_description_weights=None,k=None,exact_match
             total_possible_match_score += (weight-1)
  
  
-    for root,_,files in os.walk(resumes_path):
-        for file in files:
-            resume_text = extract_text_from_pdf(root+"/"+file)
-            resume_tokens = preprocess_text(resume_text)
-            found_skills = extract_skills(resume_tokens,job_description_tokens,exact_match)
-            years_of_experience = get_years_of_experience(resume_text)
-            candidate_info = get_information(resume_text)
-            match_scores[file] = (get_match_score(found_skills,job_description_weights)/total_possible_match_score,years_of_experience,candidate_info)
-        
-        if k is None:
-            k = len(files)
-        ranking = get_topk(match_scores,k)
-        candidates = [candidate_info[0] for candidate_info in ranking]
-        match_scores = [candidate_info[1] for candidate_info in ranking]
-        years_of_experience = [candidate_info[2] for candidate_info in ranking]
-        candidate_information = [candidate_info[3] for candidate_info in ranking]
-        return [candidates,match_scores,years_of_experience,candidate_information]
-    return [[],[],[],[]]
+    for file in iterate_bucket_items():
+        resume_text = extract_text_from_pdf(file)
+        resume_tokens = preprocess_text(resume_text)
+        found_skills = extract_skills(resume_tokens,job_description_tokens,exact_match)
+        years_of_experience = get_years_of_experience(resume_text)
+        candidate_info = get_information(resume_text)
+        match_scores[file] = (get_match_score(found_skills,job_description_weights)/total_possible_match_score,years_of_experience,candidate_info)
+
+    ranking = get_topk(match_scores,k)
+    match_scores = [candidate_info[1] for candidate_info in ranking]
+    years_of_experience = [candidate_info[2] for candidate_info in ranking]
+    candidate_information = [candidate_info[3] for candidate_info in ranking]
+    return [candidate_information,match_scores,years_of_experience]
 
 
 def get_years_of_experience(resume_text):

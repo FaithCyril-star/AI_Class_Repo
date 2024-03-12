@@ -1,8 +1,13 @@
 import heapq
+from io import BytesIO
 from pypdf import PdfReader
 import re
 import spacy
+import boto3
+import os
+from dotenv import load_dotenv
 from gensim.models import KeyedVectors
+load_dotenv()
 
 # Download this model
 nlp = spacy.load("en_core_web_sm") 
@@ -12,6 +17,14 @@ filename = r'recommender/GoogleNews-vectors-negative300.bin'
 model = KeyedVectors.load_word2vec_format(filename, binary=True)
 
 SIMILARITY_THRESHOLD = 0.9
+
+s3 = boto3.client(
+    service_name="s3",
+    region_name=os.getenv('AWS_REGION'),
+    aws_access_key_id=os.getenv('ACCESS_KEY'),
+    aws_secret_access_key=os.getenv('SECRET_KEY')
+)
+bucket = "resume-bucket2"
 
 def deduplicate_tokens(tokens):
     return list(set(tokens))
@@ -39,15 +52,14 @@ def extract_skills(resume_tokens, job_description_tokens,exact_match):
     return found_skills
 
 
-def extract_text_from_pdf(pdf_path):
-    with open(pdf_path,'rb') as file:
-        reader = PdfReader(file)
-        pages = []
-        for page in reader.pages:
-            pages.append(page.extract_text(extraction_mode="layout"))
+def extract_text_from_pdf(file):
+    reader = PdfReader(file)
+    pages = []
+    for page in reader.pages:
+        pages.append(page.extract_text(extraction_mode="layout"))
 
-        text = join_string_from_list(pages)
-        return text
+    text = join_string_from_list(pages)
+    return text
 
 
 def get_topk(match_scores,k):
@@ -77,6 +89,19 @@ def get_match_score(found_skills,job_description_weights={}):
     return score
 
 
+def iterate_bucket_items():
+    paginator = s3.get_paginator('list_objects_v2')
+    page_iterator = paginator.paginate(Bucket=bucket)
+
+    for page in page_iterator:
+        if page['KeyCount'] > 0:
+            for item in page['Contents']:
+                response = s3.get_object(Bucket=bucket, Key=item['Key'])
+
+                # Yielding the file-like object
+                yield BytesIO(response['Body'].read())
+
+
 def join_string_from_list(string_list):
     return "".join(string_list)
 
@@ -98,6 +123,7 @@ def remove_whitespace(text):
     text = text.strip()
     text = re.sub(r'\s+', ' ', text)
     return text
+
 
 
 

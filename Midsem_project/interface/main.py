@@ -4,7 +4,7 @@ import time
 from recommender import model
 import numpy as np
 import pandas as pd
-from utils import save_uploadedfile,clear_success_mesages,get_number_of_resumes
+from utils import upload_file,get_number_of_resumes
 
 KEY_SKILLS_WEIGHT = 3
 
@@ -21,21 +21,23 @@ def main():
     number_of_rankings = st.number_input('Enter desired number of rankings',value=0,min_value=0)
     match_type = st.checkbox("Exact token match")
     st.markdown('##')
-    resumes = st.file_uploader("Upload your resumes", type=['pdf'], accept_multiple_files=True, label_visibility="visible")
-    for resume in resumes:
-        save_uploadedfile(resume)
-
+    with st.form("my-form", clear_on_submit=True):
+        resumes = st.file_uploader("Upload your resumes", type=['pdf'], accept_multiple_files=True, label_visibility="visible")
+        submitted = st.form_submit_button("UPLOAD")
+    if submitted:
+        for resume in resumes:
+            upload_file(resume)
+    
     _, _, col3 , _, _ = st.columns(5)
     with col3 :
-        submit = st.button("Submit")
+        submit = st.button("Rank")
 
     if submit:
-        clear_success_mesages()
         if key_skills:
             key_skills = {skill.lower():KEY_SKILLS_WEIGHT for skill in key_skills}
         with st.spinner('Analyzing resumes...'):
-            candidates,match_scores,years_of_experience,candidate_information = model.get_rankings(job_description,job_description_weights=key_skills,k=min(number_of_rankings,get_number_of_resumes()),exact_match=match_type)
-        data_frame = pd.DataFrame(zip(candidates,match_scores,years_of_experience,candidate_information),columns=['candidates','match_scores','years_of_experience','contact_information'])
+            candidate_information,match_scores,years_of_experience= model.get_rankings(job_description,job_description_weights=key_skills,k=min(number_of_rankings,get_number_of_resumes()),exact_match=match_type)
+        data_frame = pd.DataFrame(zip(candidate_information,match_scores,years_of_experience),columns=['candidate_information','match_scores','years_of_experience'])
         st.write("Results:")
         st.table(data_frame)
 
