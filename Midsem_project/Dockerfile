@@ -12,4 +12,4 @@ RUN python -m spacy download en_core_web_sm
 
 COPY . .
 
-CMD python -m streamlit run interface/main.py
+CMD python -m streamlit run interface/main.py --server.address=0.0.0.0

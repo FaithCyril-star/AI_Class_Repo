@@ -30,9 +30,9 @@ def main():
     
     _, _, col3 , _, _ = st.columns(5)
     with col3 :
-        submit = st.button("Rank")
+        rank = st.button("Rank")
 
-    if submit:
+    if rank and job_description:
         if key_skills:
             key_skills = {skill.lower():KEY_SKILLS_WEIGHT for skill in key_skills}
         with st.spinner('Analyzing resumes...'):
